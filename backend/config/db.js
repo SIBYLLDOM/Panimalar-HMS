@@ -80,7 +80,13 @@ function createTables() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(100),
       type ENUM('boys', 'girls'),
-      block VARCHAR(10)
+      block VARCHAR(10),
+      year_category ENUM('1st_year', '2nd_year', '3rd_year', '4th_year', 'all_years'),
+      total_rooms INT DEFAULT 0,
+      total_beds INT DEFAULT 0,
+      available_beds INT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
 

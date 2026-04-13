@@ -32,20 +32,20 @@ router.get('/:id', authenticateToken, (req, res) => {
 
 // Create new hostel (admin only)
 router.post('/', authenticateToken, authorizeRoles('admin'), (req, res) => {
-  const { name, type, block } = req.body;
+  const { name, type, block, year_category } = req.body;
   
-  if (!name || !type) {
-    return res.status(400).json({ error: 'Name and type are required' });
+  if (!name || !type || !block || !year_category) {
+    return res.status(400).json({ error: 'Name, type, block, and year category are required' });
   }
 
-  const query = 'INSERT INTO hostels (name, type, block) VALUES (?, ?, ?)';
-  db.query(query, [name, type, block], (err, result) => {
+  const query = 'INSERT INTO hostels (name, type, block, year_category) VALUES (?, ?, ?, ?)';
+  db.query(query, [name, type, block, year_category], (err, result) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
     res.status(201).json({
       message: 'Hostel created successfully',
-      hostel: { id: result.insertId, name, type, block }
+      hostel: { id: result.insertId, name, type, block, year_category, total_rooms: 0, total_beds: 0, available_beds: 0 }
     });
   });
 });
@@ -53,10 +53,10 @@ router.post('/', authenticateToken, authorizeRoles('admin'), (req, res) => {
 // Update hostel (admin only)
 router.put('/:id', authenticateToken, authorizeRoles('admin'), (req, res) => {
   const { id } = req.params;
-  const { name, type, block } = req.body;
+  const { name, type, block, year_category } = req.body;
   
-  const query = 'UPDATE hostels SET name = ?, type = ?, block = ? WHERE id = ?';
-  db.query(query, [name, type, block, id], (err, result) => {
+  const query = 'UPDATE hostels SET name = ?, type = ?, block = ?, year_category = ? WHERE id = ?';
+  db.query(query, [name, type, block, year_category, id], (err, result) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -127,6 +127,124 @@ router.get('/:id/rooms', authenticateToken, (req, res) => {
     });
     
     res.json(Object.values(rooms));
+  });
+});
+
+// Create rooms for a hostel (admin only)
+router.post('/:id/rooms', authenticateToken, authorizeRoles('admin'), (req, res) => {
+  const { id } = req.params;
+  const { room_number, capacity } = req.body;
+  
+  if (!room_number || !capacity) {
+    return res.status(400).json({ error: 'Room number and capacity are required' });
+  }
+
+  const query = 'INSERT INTO rooms (hostel_id, room_number, capacity) VALUES (?, ?, ?)';
+  db.query(query, [id, room_number, capacity], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    // Update hostel room count
+    const updateRoomCount = 'UPDATE hostels SET total_rooms = total_rooms + 1 WHERE id = ?';
+    db.query(updateRoomCount, [id], (updateErr) => {
+      if (updateErr) {
+        console.error('Error updating room count:', updateErr);
+      }
+    });
+
+    res.status(201).json({
+      message: 'Room created successfully',
+      room: { id: result.insertId, hostel_id: id, room_number, capacity }
+    });
+  });
+});
+
+// Create beds for a room (admin only)
+router.post('/rooms/:roomId/beds', authenticateToken, authorizeRoles('admin'), (req, res) => {
+  const { roomId } = req.params;
+  const { number_of_beds } = req.body;
+  
+  if (!number_of_beds || number_of_beds <= 0) {
+    return res.status(400).json({ error: 'Number of beds is required and must be greater than 0' });
+  }
+
+  // Get room info to get hostel_id
+  const getRoom = 'SELECT hostel_id FROM rooms WHERE id = ?';
+  db.query(getRoom, [roomId], (err, roomResults) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (roomResults.length === 0) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    const hostel_id = roomResults[0].hostel_id;
+    const bedPromises = [];
+    
+    // Create multiple beds
+    for (let i = 1; i <= number_of_beds; i++) {
+      const createBed = new Promise((resolve, reject) => {
+        const query = 'INSERT INTO beds (room_id, bed_number) VALUES (?, ?)';
+        db.query(query, [roomId, i], (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+      bedPromises.push(createBed);
+    }
+
+    Promise.all(bedPromises)
+      .then(() => {
+        // Update hostel bed counts
+        const updateBedCount = 'UPDATE hostels SET total_beds = total_beds + ?, available_beds = available_beds + ? WHERE id = ?';
+        db.query(updateBedCount, [number_of_beds, number_of_beds, hostel_id], (updateErr) => {
+          if (updateErr) {
+            console.error('Error updating bed count:', updateErr);
+          }
+        });
+
+        res.status(201).json({
+          message: `${number_of_beds} beds created successfully`,
+          beds_created: number_of_beds
+        });
+      })
+      .catch((error) => {
+        res.status(500).json({ error: 'Error creating beds' });
+      });
+  });
+});
+
+// Get hostel statistics
+router.get('/:id/stats', authenticateToken, authorizeRoles('admin'), (req, res) => {
+  const { id } = req.params;
+  
+  const query = `
+    SELECT 
+      h.*,
+      COUNT(DISTINCT r.id) as actual_rooms,
+      COUNT(b.id) as actual_beds,
+      COUNT(CASE WHEN b.is_occupied = TRUE THEN 1 END) as occupied_beds
+    FROM hostels h
+    LEFT JOIN rooms r ON h.id = r.hostel_id
+    LEFT JOIN beds b ON r.id = b.room_id
+    WHERE h.id = ?
+    GROUP BY h.id
+  `;
+  
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Hostel not found' });
+    }
+    
+    const hostel = results[0];
+    hostel.occupancy_rate = hostel.actual_beds > 0 ? 
+      Math.round((hostel.occupied_beds / hostel.actual_beds) * 100) : 0;
+    
+    res.json(hostel);
   });
 });
 

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import StudentDashboard from './components/StudentDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import SuperAdminDashboard from './components/SuperAdminDashboard';
 import HODDashboard from './components/HODDashboard';
 import WardenDashboard from './components/WardenDashboard';
 import './App.css';
@@ -54,7 +55,7 @@ const AppRoutes = () => {
         path="/admin" 
         element={
           <ProtectedRoute requiredRole="admin">
-            <AdminDashboard />
+            <SuperAdminDashboard />
           </ProtectedRoute>
         } 
       />
