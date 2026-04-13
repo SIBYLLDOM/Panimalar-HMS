@@ -52,6 +52,28 @@ function createTables() {
     )
   `);
 
+  // STUDENTS
+  db.query(`
+    CREATE TABLE IF NOT EXISTS students (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT UNIQUE,
+      roll_no VARCHAR(20) UNIQUE,
+      name VARCHAR(100),
+      dob DATE,
+      department VARCHAR(100),
+      father_name VARCHAR(100),
+      mother_name VARCHAR(100),
+      father_phone VARCHAR(20),
+      mother_phone VARCHAR(20),
+      house_address TEXT,
+      student_email VARCHAR(100),
+      father_email VARCHAR(100),
+      mother_email VARCHAR(100),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
   // HOSTELS
   db.query(`
     CREATE TABLE IF NOT EXISTS hostels (
@@ -82,7 +104,7 @@ function createTables() {
       is_occupied BOOLEAN DEFAULT FALSE,
       student_id INT,
       FOREIGN KEY (room_id) REFERENCES rooms(id),
-      FOREIGN KEY (student_id) REFERENCES users(id)
+      FOREIGN KEY (student_id) REFERENCES students(id)
     )
   `);
 
@@ -96,7 +118,7 @@ function createTables() {
       reason TEXT,
       status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
       approved_by INT,
-      FOREIGN KEY (student_id) REFERENCES users(id),
+      FOREIGN KEY (student_id) REFERENCES students(id),
       FOREIGN KEY (approved_by) REFERENCES users(id)
     )
   `);
@@ -109,7 +131,7 @@ function createTables() {
       preferred_department VARCHAR(100),
       status ENUM('pending', 'approved', 'rejected'),
       assigned_room_id INT,
-      FOREIGN KEY (student_id) REFERENCES users(id),
+      FOREIGN KEY (student_id) REFERENCES students(id),
       FOREIGN KEY (assigned_room_id) REFERENCES rooms(id)
     )
   `);
@@ -123,9 +145,9 @@ function createTables() {
       amount DECIMAL(10,2),
       status ENUM('paid', 'unpaid') DEFAULT 'unpaid',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (student_id) REFERENCES users(id)
+      FOREIGN KEY (student_id) REFERENCES students(id)
     )
   `);
 
-  console.log("All tables ready ✅");
+  console.log("All tables ready ");
 };

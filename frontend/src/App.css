@@ -109,7 +109,7 @@
   padding: 0;
   display: flex;
   gap: 8px;
-  margin: 32px 0 0;
+  margin: 16px 0 0;
 
   .logo {
     height: 18px;
