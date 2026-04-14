@@ -1,0 +1,383 @@
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─────────────────────────────────────────
+   Sidebar Shell
+───────────────────────────────────────── */
+.hod-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 248px;
+  background: #0B3C5D;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.hod-navbar.collapsed {
+  width: 68px;
+}
+
+/* ─────────────────────────────────────────
+   Brand / Logo
+───────────────────────────────────────── */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: #1D70B8;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(29, 112, 184, 0.45);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  font-family: 'Georgia', serif;
+}
+
+.brand-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ─────────────────────────────────────────
+   Collapse Toggle
+───────────────────────────────────────── */
+.collapse-toggle {
+  position: absolute;
+  top: 24px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #1D70B8;
+  border: 2px solid #0B3C5D;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.collapse-toggle:hover {
+  background: #2580cc;
+  transform: scale(1.1);
+}
+
+/* ─────────────────────────────────────────
+   Navigation
+───────────────────────────────────────── */
+.navbar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.navbar-nav::-webkit-scrollbar { display: none; }
+
+.nav-section {
+  margin-bottom: 6px;
+}
+
+.nav-section + .nav-section {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.nav-section-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 4px 8px 8px;
+  white-space: nowrap;
+}
+
+/* ── Nav Item ── */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    padding-left 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.9);
+  padding-left: 13px;
+}
+
+.nav-item.active {
+  background: #1D70B8;
+  color: #ffffff;
+  font-weight: 600;
+  padding-left: 10px;
+  box-shadow: 0 2px 10px rgba(29, 112, 184, 0.4);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  background: #ffffff;
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Badge ── */
+.nav-badge {
+  background: #f59e0b;
+  color: #7c2d12;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 99px;
+  flex-shrink: 0;
+  line-height: 16px;
+}
+
+.nav-item.active .nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Collapsed dot badge */
+.nav-badge-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  background: #f59e0b;
+  border-radius: 50%;
+  border: 1.5px solid #0B3C5D;
+}
+
+/* ─────────────────────────────────────────
+   Footer / Profile
+───────────────────────────────────────── */
+.navbar-footer {
+  padding: 12px 10px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.footer-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.footer-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #1D70B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-avatar-solo {
+  margin: 0 auto 4px;
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.footer-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-role {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+/* ── Logout ── */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #fca5a5;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.logout-btn:active {
+  transform: scale(0.97);
+}
+
+/* ─────────────────────────────────────────
+   Tooltip (collapsed mode)
+───────────────────────────────────────── */
+.hod-navbar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+}
+
+.hod-navbar.collapsed .nav-item:hover {
+  padding-left: 10px;
+}
+
+.hod-navbar.collapsed .nav-item.active::before {
+  height: 18px;
+}
+
+/* ─────────────────────────────────────────
+   Layout helper — add to your App/Layout
+   so the main content shifts right
+───────────────────────────────────────── */
+.hod-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.hod-layout-content {
+  margin-left: 248px;
+  flex: 1;
+  transition: margin-left 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hod-layout-content.sidebar-collapsed {
+  margin-left: 68px;
+}
+
+/* ─────────────────────────────────────────
+   Responsive
+───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hod-navbar {
+    width: 68px;
+  }
+
+  .brand-text,
+  .nav-label,
+  .nav-section-label,
+  .footer-profile,
+  .footer-info,
+  .logout-btn span {
+    display: none;
+  }
+
+  .hod-navbar .nav-item {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .hod-layout-content {
+    margin-left: 68px;
+  }
+
+  .collapse-toggle {
+    display: none;
+  }
+
+  .footer-avatar-solo {
+    display: flex;
+  }
+}

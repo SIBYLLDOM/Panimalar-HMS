@@ -130,25 +130,35 @@ router.get('/admin', authenticateToken, authorizeRoles('admin'), (req, res) => {
 
 // HOD dashboard
 router.get('/hod', authenticateToken, authorizeRoles('hod'), (req, res) => {
-  const department = req.user.department;
-  
-  // Get department-specific statistics
-  const queries = {
-    departmentStudents: `SELECT COUNT(*) as count FROM students WHERE department = ?`,
-    departmentLeaveRequests: `SELECT COUNT(*) as count FROM leave_requests lr 
-                          JOIN students s ON lr.student_id = s.id 
-                          WHERE s.department = ? AND lr.status = "pending"`,
-    departmentRoomChanges: `SELECT COUNT(*) as count FROM room_change_requests rcr 
-                           JOIN students s ON rcr.student_id = s.id 
-                           WHERE s.department = ? AND rcr.status = "pending"`
-  };
+  const userId = req.user.id;
+
+  // Ensure we safely look up the exact department in real-time from the parent 'users' table
+  db.query('SELECT department FROM users WHERE id = ?', [userId], (err, userRes) => {
+    if (err || userRes.length === 0) {
+      return res.status(500).json({ error: 'Failed to access HOD profile' });
+    }
+
+    const department = userRes[0].department;
+
+    // Get department-specific statistics
+    const queries = {
+      totalStudents: `SELECT COUNT(*) as count FROM students`,
+      departmentStudents: `SELECT COUNT(*) as count FROM students WHERE department = ?`,
+      departmentStudentsInHostel: `SELECT COUNT(*) as count FROM beds b JOIN students s ON b.student_id = s.id WHERE s.department = ? AND b.is_occupied = TRUE`,
+      departmentLeaveRequests: `SELECT COUNT(*) as count FROM leave_requests lr 
+                            JOIN students s ON lr.student_id = s.id 
+                            WHERE s.department = ? AND lr.status = "pending"`,
+      departmentRoomChanges: `SELECT COUNT(*) as count FROM room_change_requests rcr 
+                             JOIN students s ON rcr.student_id = s.id 
+                             WHERE s.department = ? AND rcr.status = "pending"`
+    };
   
   const results = {};
   let completed = 0;
   const totalQueries = Object.keys(queries).length;
   
   Object.entries(queries).forEach(([key, query]) => {
-    db.query(query, [department, department, department], (err, result) => {
+    db.query(query, [department], (err, result) => {
       if (err) {
         console.error(`Error in ${key} query:`, err);
         results[key] = 0;
@@ -164,6 +174,7 @@ router.get('/hod', authenticateToken, authorizeRoles('hod'), (req, res) => {
           statistics: results
         });
       }
+      });
     });
   });
 });

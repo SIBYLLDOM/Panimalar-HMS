@@ -52,7 +52,8 @@ function createTables() {
     )
   `);
 
-  // STUDENTS
+  
+  
   db.query(`
     CREATE TABLE IF NOT EXISTS students (
       id INT AUTO_INCREMENT PRIMARY KEY,

@@ -5,7 +5,7 @@ import Login from './components/Login';
 import StudentDashboard from './components/StudentDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
-import HODDashboard from './components/HODDashboard';
+import HODDashboard from './components/HOD/hod_dash';
 import WardenDashboard from './components/WardenDashboard';
 import './App.css';
 
@@ -60,7 +60,7 @@ const AppRoutes = () => {
         } 
       />
       <Route 
-        path="/hod" 
+        path="/hod/*" 
         element={
           <ProtectedRoute requiredRole="hod">
             <HODDashboard />
@@ -75,6 +75,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

@@ -5,17 +5,25 @@ import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get all leave requests (admin/warden only)
-router.get('/', authenticateToken, authorizeRoles('admin', 'warden'), (req, res) => {
-  const query = `
+router.get('/', authenticateToken, authorizeRoles('admin', 'warden', 'hod'), (req, res) => {
+  let query = `
     SELECT lr.*, s.name as student_name, s.roll_no, s.department,
            u.email as student_email, a.name as approved_by_name
     FROM leave_requests lr
     JOIN students s ON lr.student_id = s.id
     JOIN users u ON s.user_id = u.id
     LEFT JOIN users a ON lr.approved_by = a.id
-    ORDER BY lr.created_at DESC
   `;
-  db.query(query, (err, results) => {
+  const queryParams = [];
+
+  if (req.user.role === 'hod') {
+    query += ` WHERE s.department = ? `;
+    queryParams.push(req.user.department);
+  }
+
+  query += ` ORDER BY lr.created_at DESC `;
+
+  db.query(query, queryParams, (err, results) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -94,8 +102,8 @@ router.post('/', authenticateToken, authorizeRoles('student'), (req, res) => {
   });
 });
 
-// Approve leave request (admin/warden only)
-router.put('/:id/approve', authenticateToken, authorizeRoles('admin', 'warden'), (req, res) => {
+// Approve leave request (admin/warden/hod only)
+router.put('/:id/approve', authenticateToken, authorizeRoles('admin', 'warden', 'hod'), (req, res) => {
   const { id } = req.params;
   const approved_by = req.user.id;
   
@@ -111,8 +119,8 @@ router.put('/:id/approve', authenticateToken, authorizeRoles('admin', 'warden'),
   });
 });
 
-// Reject leave request (admin/warden only)
-router.put('/:id/reject', authenticateToken, authorizeRoles('admin', 'warden'), (req, res) => {
+// Reject leave request (admin/warden/hod only)
+router.put('/:id/reject', authenticateToken, authorizeRoles('admin', 'warden', 'hod'), (req, res) => {
   const { id } = req.params;
   const approved_by = req.user.id;
   
